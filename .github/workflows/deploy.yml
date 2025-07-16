@@ -45,24 +45,21 @@ jobs:
             }
           fi
 
-          echo "[✔] Activating venv..."
-          source venv/bin/activate
-
           echo "[✔] Installing/upgrading pip and requirements..."
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
 
           echo "[✔] Running Django migrate and collectstatic..."
-          python manage.py migrate --noinput
-          python manage.py collectstatic --noinput
+          ./venv/bin/python manage.py migrate --noinput
+          ./venv/bin/python manage.py collectstatic --noinput
 
           echo "[✔] Restarting gunicorn..."
           pkill -f "gunicorn.*sammy-mailer" || echo "No existing gunicorn process to kill."
 
-          nohup venv/bin/gunicorn emailing_project.wsgi:application \
+          nohup ./venv/bin/gunicorn emailing_project.wsgi:application \
               --bind 0.0.0.0:7000 \
               --workers 3 \
               --name sammy-mailer > gunicorn.log 2>&1 &
 
-          echo "[✔] Deployment finished."
+          echo "[✅] Deployment finished successfully."
         EOF
