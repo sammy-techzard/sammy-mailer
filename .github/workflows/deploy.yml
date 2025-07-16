@@ -13,18 +13,56 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0  # <== This fixes the shallow push issue
+        fetch-depth: 0
 
     - name: Set up SSH key
       uses: webfactory/ssh-agent@v0.9.1
       with:
         ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-        
+
     - name: Add server to known_hosts
       run: |
         ssh-keyscan -H 68.168.211.152 >> ~/.ssh/known_hosts
 
-    - name: Push to remote bare git repo
+    - name: Copy project files to server
       run: |
-        git remote add production ssh://root@68.168.211.152:22/root/apps/sammy-mailer
-        git push -f production main
+        rsync -avz --delete \
+          --exclude '.git' \
+          --exclude 'venv' \
+          ./ root@68.168.211.152:/root/webapps/sammy-mailer/
+
+    - name: Run deploy commands on server
+      run: |
+        ssh root@68.168.211.152 << 'EOF'
+          set -e
+          cd /root/webapps/sammy-mailer
+
+          echo "[✔] Creating venv if missing..."
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv || {
+              echo "❌ Failed to create virtual environment. Is python3-venv installed?"
+              exit 1
+            }
+          fi
+
+          echo "[✔] Activating venv..."
+          source venv/bin/activate
+
+          echo "[✔] Installing/upgrading pip and requirements..."
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+          echo "[✔] Running Django migrate and collectstatic..."
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+
+          echo "[✔] Restarting gunicorn..."
+          pkill -f "gunicorn.*sammy-mailer" || echo "No existing gunicorn process to kill."
+
+          nohup venv/bin/gunicorn emailing_project.wsgi:application \
+              --bind 0.0.0.0:7000 \
+              --workers 3 \
+              --name sammy-mailer > gunicorn.log 2>&1 &
+
+          echo "[✔] Deployment finished."
+        EOF
