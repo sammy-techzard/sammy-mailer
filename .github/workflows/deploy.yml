@@ -29,6 +29,7 @@ jobs:
         rsync -avz --delete \
           --exclude '.git' \
           --exclude 'venv' \
+          --exclude 'db.sqlite3' \  
           ./ root@68.168.211.152:/root/webapps/sammy-mailer/
 
     - name: Run deploy commands on server
