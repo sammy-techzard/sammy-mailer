@@ -1,2 +1,1 @@
 # sammy-mailer
-bj
