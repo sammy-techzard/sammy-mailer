@@ -56,7 +56,7 @@ jobs:
           echo "[✔] Restarting gunicorn..."
           pkill -f "gunicorn.*sammy-mailer" || echo "No existing gunicorn process to kill."
 
-          nohup ./venv/bin/gunicorn emailing_project.wsgi:application \
+          nohup ./venv/bin/gunicorn application.wsgi:application \
               --bind 0.0.0.0:7000 \
               --workers 3 \
               --name sammy-mailer > gunicorn.log 2>&1 &
