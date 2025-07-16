@@ -17,6 +17,10 @@ jobs:
       uses: webfactory/ssh-agent@v0.9.1
       with:
         ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+        
+    - name: Add server to known_hosts
+      run: |
+        ssh-keyscan -H 68.168.211.152 >> ~/.ssh/known_hosts
 
     - name: Push to remote bare git repo
       run: |
