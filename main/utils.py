@@ -16,9 +16,9 @@ def send_email(data):
     if data.get("cc"):
         msg['Cc'] = ', '.join(data['cc'])
 
-    msg.attach(MIMEText(data['message'], 'plain'))
+    msg.attach(MIMEText(data['message'], 'html'))
 
-    # 🔗 Attach files by filename
+    # Attach files by filename
     for filename in data.get('attachments', []):
         abs_path = os.path.join(settings.MEDIA_ROOT, filename)
         if not os.path.exists(abs_path):
