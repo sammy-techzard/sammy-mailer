@@ -208,4 +208,5 @@ CSRF_TRUSTED_ORIGINS = [
     'http://0.0.0.0',
     'http://*.kiin.rw',
     'https://*.kiin.rw',
+    'https://*.*.*',
 ]

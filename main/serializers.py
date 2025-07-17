@@ -15,3 +15,10 @@ class SendEmailSerializer(serializers.Serializer):
 
     subject = serializers.CharField()
     message = serializers.CharField()
+
+    attachments = serializers.ListField(child=serializers.CharField(), required=False)
+class UploadEmailAttachmentSerializer(serializers.Serializer):
+    """
+    Serializer to handle uploading a single email attachment file.
+    """
+    file = serializers.FileField()
